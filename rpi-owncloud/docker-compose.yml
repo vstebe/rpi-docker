@@ -1,0 +1,21 @@
+owncloud:
+  image: schoeffm/rpi-owncloud
+  ports:
+    - "80:80"
+    - "443:443"
+  links:
+    - db:mysql
+  volumes_from:
+    - data 
+  environment:
+    OWNCLOUD_SERVERNAME: dockerpi
+db:
+  image: schoeffm/rpi-owncloud-mysql
+  expose:
+    - "3306"
+  environment:
+    MYSQL_ROOT_PASSWORD: mypassword
+    OWNCLOUD_DB_USER: owncloud
+    OWNCLOUD_DB_PASSWORD: mycloud
+data:
+  image: schoeffm/rpi-owncloud-data
