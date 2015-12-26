@@ -2,12 +2,19 @@ FROM karrde/rpi-nginx-php5
 
 ENV OWNCLOUD_VERSION owncloud-8.2.1
 ENV OWNCLOUD_BASE_DIR /var/www
+env OWNCLOUD_SSL_DIR /etc/nginx/ssl
 ENV OWNCLOUD_DATA_DIR /srv/http/owncloud/data
 ENV OWNCLOUD_CONFIG_DIR $OWNCLOUD_BASE_DIR/owncloud/config
 ENV OWNCLOUD_SERVERNAME dockerpi
 
 # we need openssl in order to generate a new ssl-key
 RUN apt-get update && apt-get install -y openssl wget bzip2 vim
+
+# finally, download owncloud and extract it
+WORKDIR /var/www
+RUN sudo wget http://download.owncloud.org/community/"$OWNCLOUD_VERSION".tar.bz2 && \
+    sudo tar xvf "$OWNCLOUD_VERSION".tar.bz2 && \
+    sudo rm "$OWNCLOUD_VERSION".tar.bz2
 
 # Change upload-limits and -sizes
 RUN sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
@@ -17,7 +24,7 @@ RUN sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/
     echo "extension = apc.so" >> /etc/php5/fpm/php.ini && \
     echo "apc.enabled = 1" >> /etc/php5/fpm/php.ini && \
     echo "apc.include_once_override = 0" >> /etc/php5/fpm/php.ini && \
-    echo "apc.shm_size = 256" >> /etc/php5/fpm/php.ini && \
+    echo "apc.shm_size = 24M" >> /etc/php5/fpm/php.ini && \
     echo "zend_extension=opcache.so" >> /etc/php5/fpm/conf.d/05-opcache.ini && \
     echo "opcache.memory_consumption = 256" >> /etc/php5/fpm/conf.d/05-opcache.ini && \
     echo "opcache.interned_strings_buffer = 16" >> /etc/php5/fpm/conf.d/05-opcache.ini && \
@@ -30,19 +37,14 @@ ADD default /etc/nginx/sites-available/default
 
 # Create the data-directory where owncloud can store its stuff
 RUN sudo mkdir -p "$OWNCLOUD_DATA_DIR" && \
-    sudo chown www-data:www-data "$OWNCLOUD_DATA_DIR"
-
-# finally, download owncloud and extract it
-WORKDIR /var/www
-RUN sudo wget http://download.owncloud.org/community/"$OWNCLOUD_VERSION".tar.bz2 && \ 
-    sudo tar xvf "$OWNCLOUD_VERSION".tar.bz2 && \
-    sudo rm "$OWNCLOUD_VERSION".tar.bz2 
+    sudo chown www-data:www-data "$OWNCLOUD_DATA_DIR" 
 
 WORKDIR /
 COPY docker-entrypoint.sh /entrypoint.sh
 
 VOLUME "$OWNCLOUD_DATA_DIR"
 VOLUME "$OWNCLOUD_CONFIG_DIR"
+VOLUME "$OWNCLOUD_SSL_DIR"
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD service php5-fpm start && nginx

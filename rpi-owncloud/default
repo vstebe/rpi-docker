@@ -8,8 +8,8 @@ server {
     listen 443 ssl; 
     server_name localhost;
 
-    ssl_certificate /etc/nginx/ssl/owncloud.crt; 
-    ssl_certificate_key /etc/nginx/ssl/owncloud.key; 
+    ssl_certificate /etc/nginx/ssl/fullchain1.pem; 
+    ssl_certificate_key /etc/nginx/ssl/privkey1.pem; 
 
     root /var/www/owncloud;
     index index.php;
