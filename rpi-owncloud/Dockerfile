@@ -1,6 +1,6 @@
 FROM karrde/rpi-nginx-php5
 
-ENV OWNCLOUD_VERSION owncloud-8.2.1
+ENV OWNCLOUD_VERSION owncloud-8.2.2
 ENV OWNCLOUD_BASE_DIR /var/www
 env OWNCLOUD_SSL_DIR /etc/nginx/ssl
 ENV OWNCLOUD_DATA_DIR /srv/http/owncloud/data
